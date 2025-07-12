@@ -1,0 +1,15 @@
+{
+  "name": "dev-tinder",
+  "version": "1.0.0",
+  "description": "tender for developer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev":"nodemon app.js"
+  },
+  "author": "Aditya Rajoriya",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0" 
+  }
+}
