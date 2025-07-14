@@ -18,6 +18,29 @@ app.get('/check/:age',(req,res,getGo)=>{
 )
 
 
+//! error handler
+
+/**
+ When a user visits /error, this route runs.
+
+It creates a new Error object with the message "Something went wrong".
+
+Instead of sending a normal response, it calls next(err):
+
+This passes the error to the error handling middleware.
+
+Express skips all remaining normal middleware and goes directly to error handling middleware.
+ */
+app.get("/error", (req, res, next) => {
+  const err = new Error("Something went wrong");
+  next(err); // pass error to error handler
+});
+
+app.use((err,req,res,next)=>{
+  console.error(err.message);
+  res.status(500).send("internal server error:"+err.message)
+})
+
 app.listen(7777, () => {
   console.log("server is running ");
 });
