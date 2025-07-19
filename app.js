@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const connectDB = require("./src/config/database");
 const User = require("./src/models/user");
+// const user = require("./src/models/user");
 
 app.use(express.json());
+
 app.post("/signup", async (req, res) => {
   //!creating a instance of user model
   const user = new User(req.body);
@@ -15,40 +17,51 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// get user by userID
-app.get('/user', async (req,res)=>{
-  const userEmail=req.body.email
+// get user by email
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.email;
   try {
-    const user=await User.find({email:userEmail})
-    res.send(user)
+    const user = await User.find({ email: userEmail });
+    res.send(user);
   } catch (error) {
-    res.status(500).send("something went wrong")
+    res.status(500).send("something went wrong");
   }
-})
+});
 
 // get all user data
-app.get("/feed",async(req,res)=>{
+app.get("/feed", async (req, res) => {
   try {
-    const feed=await User.find({})
-    res.send(feed)
+    const feed = await User.find({});
+    res.send(feed);
   } catch (error) {
-    res.status(500).send("something went wrong")
+    res.status(500).send("something went wrong");
   }
-})
+});
 
-
-//find user by id
-app.get('/findById',async(req,res)=>{
-  const id='68786dc0d7fc799492baf64f'
+//delete api
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
   try {
-    const findbyId=await User.findById(id)
-    res.send(findbyId)
-  } catch (error) {
-    res.status(500).send("something went wrong")
+    const user = await User.findByIdAndDelete({ _id: userId });
+    // const user=await User.findByIdAndDelete(userId)
+    res.send("user deleted suffessfully");
+  } catch (err) {
+    res.status(400).send(err);
   }
-})
+});
 
+//update data of user
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate({ _id: userId }, data);
 
+    res.send("user updated successfuly");
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
 connectDB()
   .then(() => {
     console.log("database connection successful");
