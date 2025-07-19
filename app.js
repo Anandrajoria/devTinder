@@ -15,26 +15,27 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-//get user by firstname findOne()
-app.get("/user", async (req, res) => {
-  const userFirstName = req.body.firstName;
+// get user by userID
+app.get('/user', async (req,res)=>{
+  const userEmail=req.body.email
   try {
-    const users = await User.findOne({ firstName: userFirstName });
-    res.send(users);
-  } catch (err) {
-    res.status(400).send("something went wrong");
+    const user=await User.find({email:userEmail})
+    res.send(user)
+  } catch (error) {
+    res.status(500).send("something went wrong")
   }
-});
+})
 
-//! feed api = GET /feed - get all the users form database
-app.get("/feed", async (sreq, res) => {
+// get all user data
+app.get("/feed",async(req,res)=>{
   try {
-    const users = await User.find({});
-    res.send(users);
-  } catch (err) {
-    res.status(400).send("something went wrong");
+    const feed=await User.find({})
+    res.send(feed)
+  } catch (error) {
+    res.status(500).send("something went wrong")
   }
-});
+})
+
 
 connectDB()
   .then(() => {
