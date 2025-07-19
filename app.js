@@ -39,29 +39,30 @@ app.get("/feed", async (req, res) => {
 });
 
 //delete api
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.delete("/user",async (req,res)=>{
+  const userId=req.body.userId
   try {
-    const user = await User.findByIdAndDelete({ _id: userId });
-    // const user=await User.findByIdAndDelete(userId)
-    res.send("user deleted suffessfully");
+    await User.findByIdAndDelete({_id:userId})
+    await User.findByIdAndDelete(userId)
+    res.send("user deleted successfully")
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send(err)
   }
-});
+})
 
-//update data of user
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
-  const data = req.body;
+//user data update api based on id
+app.patch("/user",async(req,res)=>{
+  const userId=req.body.userId
+  const data=req.body
   try {
-    const user = await User.findByIdAndUpdate({ _id: userId }, data);
-
-    res.send("user updated successfuly");
+    await User.findByIdAndUpdate({_id:userId},data)
+    res.send("data updated  successfully")
   } catch (error) {
-    res.status(400).send(error);
+    res.status(500).send(err.message)
   }
-});
+})
+
+
 connectDB()
   .then(() => {
     console.log("database connection successful");
