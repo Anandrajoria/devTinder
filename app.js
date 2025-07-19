@@ -37,6 +37,18 @@ app.get("/feed",async(req,res)=>{
 })
 
 
+//find user by id
+app.get('/findById',async(req,res)=>{
+  const id='68786dc0d7fc799492baf64f'
+  try {
+    const findbyId=await User.findById(id)
+    res.send(findbyId)
+  } catch (error) {
+    res.status(500).send("something went wrong")
+  }
+})
+
+
 connectDB()
   .then(() => {
     console.log("database connection successful");
