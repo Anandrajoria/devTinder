@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt"); 
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -79,9 +80,9 @@ const userSchema = new mongoose.Schema(
     },
     photoUrl: {
       type: String,
-      trim: true, // It's good practice to trim URLs
+      trim: true, 
       validate(value) {
-        if (!validator.isURL(value)) {
+        if (value && !validator.isURL(value)) {
           throw new Error("Invalid URL provided for photoUrl.");
         }
       },
@@ -101,5 +102,15 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.pre("save", async function (next) {
+  const user = this;
+
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+
+  next();
+});
 
 module.exports = mongoose.model("user", userSchema);

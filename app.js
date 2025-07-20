@@ -4,6 +4,8 @@ const app = express();
 const connectDB = require("./src/config/database");
 const User = require("./src/models/user");
 const { body, validationResult } = require("express-validator");
+const { validateSignUpData } = require("./src/utils/validation");
+const bcrypt = require("bcrypt");
 
 // --- Core Middleware ---
 // Enables the express app to parse JSON formatted request bodies
@@ -65,7 +67,7 @@ const signupValidationRules = [
  */
 
 // add new user data
-app.post("/signup", signupValidationRules, async (req, res) => {
+app.post("/signup", signupValidationRules, validateSignUpData ,async (req, res) => {
   // Check for validation errors defined in signupValidationRules
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -73,26 +75,34 @@ app.post("/signup", signupValidationRules, async (req, res) => {
   }
 
   try {
-    // 🔍 Check if user with email already exists
-    const existingUser = await User.findOne({ email: req.body.email });
-    if (existingUser) {
-      return res.status(400).send({ error: "Email is already registered." });
-    }
-
-    // this check for an existing username
-    const existingUserName = await User.findOne({
-      userName: req.body.userName.toLowerCase(), // Check lowercase version
-    });
-    if (existingUserName) {
-      return res.status(400).send({ error: "Username is already taken." });
-    }
-
-    // If all checks pass, create and save the new user.
+    
+    // Run all your validation checks first.
     const user = new User(req.body);
     await user.save();
     res.status(201).send({ message: "User added successfully." });
   } catch (err) {
     res.status(400).send({ error: "Error saving user: " + err.message });
+  }
+});
+
+//login user
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).send({ error: "Email and password are required." });
+    // Find the user by their email address.
+    const user = await User.findOne({ email });
+
+    // Combine the user existence check and password comparison into a single condition.
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).send({ error: "Invalid credentials." });
+    }
+
+    // On success, you would typically generate a JWT token.
+    res.send({ message: "User login successful" });
+  } catch (error) {
+    res.status(400).send("ERROR:" + error.message);
   }
 });
 
