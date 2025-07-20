@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const validator = require("validator");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -13,18 +13,56 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    userName: {
+      type: String,
+      required: [true, "Username is required."],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      minlength: [3, "Username must be at least 3 characters long."],
+      maxlength: [20, "Username cannot exceed 20 characters."],
+      validate: {
+        validator: function (value) {
+          if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+            return false;
+          }
+          const reservedNames = ["admin", "root", "support", "contact", "api"];
+          return !reservedNames.includes(value); // Returns false if the name is reserved
+        },
+        message: (props) =>
+          `${props.value} is not a valid or is a reserved username.`,
+      },
+    },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please use a valid email address."],
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("invalid email address");
+        }
+      },
     },
     password: {
       type: String,
       required: true,
-      minlength: [8, "Password must be at least 8 characters long."], // Added for security
+      validate(value) {
+        if (
+          !validator.isStrongPassword(value, {
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+          })
+        ) {
+          throw new Error(
+            "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one symbol."
+          );
+        }
+      },
     },
     age: {
       type: Number,
@@ -36,11 +74,17 @@ const userSchema = new mongoose.Schema(
 
       enum: {
         values: ["male", "female", "other"],
-        message: "{VALUE} is not a supported gender.",
+        message: `{VALUE} is not a supported gender.`,
       },
     },
     photoUrl: {
       type: String,
+      trim: true, // It's good practice to trim URLs
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid URL provided for photoUrl.");
+        }
+      },
       default:
         "https://imgs.search.brave.com/gERZhZ4OGFK96Hl-aMxlMTS8kCORTP_VZl0CpbiRMrs/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/cG5naXRlbS5jb20v/cGltZ3MvbS8yNzIt/MjcyMDY1Nl91c2Vy/LXByb2ZpbGUtZHVt/bXktaGQtcG5nLWRv/d25sb2FkLnBuZw",
     },

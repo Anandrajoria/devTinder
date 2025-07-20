@@ -1,10 +1,17 @@
+// --- Imports ---
 const express = require("express");
 const app = express();
 const connectDB = require("./src/config/database");
 const User = require("./src/models/user");
 const { body, validationResult } = require("express-validator");
+
+// --- Core Middleware ---
+// Enables the express app to parse JSON formatted request bodies
 app.use(express.json());
 
+// --- Validation Rule Sets ---
+
+// Validation rules for updating optional user profile fields.
 const updateUserValidationRules = [
   //validate age
   body("age")
@@ -25,13 +32,23 @@ const updateUserValidationRules = [
   body(["about", "gender"]).optional().isString().trim(),
 ];
 
+// Validation rules for the user signup process.
 const signupValidationRules = [
   body("email").isEmail().withMessage("Valid email is required."),
   body("firstName")
     .notEmpty()
-    .withMessage("Name is required.")
+    .withMessage("firstName is required.")
     .isLength({ min: 4 })
     .withMessage("First name must be at least 4 characters."),
+  body("userName")
+    .notEmpty()
+    .withMessage("Username is required.")
+    .isLength({ min: 3, max: 20 })
+    .withMessage("Username must be between 3 and 20 characters.")
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage(
+      "Username can only contain letters, numbers, and underscores."
+    ),
   body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters."),
@@ -40,15 +57,37 @@ const signupValidationRules = [
     .withMessage("Gender must be 'male', 'female' or 'other'."),
 ];
 
-app.post("/signup", signupValidationRules, async (req, res) => {
-  //!creating a instance of user model
+// --- API Routes ---
 
+/**
+ * @route   POST /signup
+ * @desc    Registers a new user after validation.
+ */
+
+// add new user data
+app.post("/signup", signupValidationRules, async (req, res) => {
+  // Check for validation errors defined in signupValidationRules
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
 
   try {
+    // 🔍 Check if user with email already exists
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(400).send({ error: "Email is already registered." });
+    }
+
+    // this check for an existing username
+    const existingUserName = await User.findOne({
+      userName: req.body.userName.toLowerCase(), // Check lowercase version
+    });
+    if (existingUserName) {
+      return res.status(400).send({ error: "Username is already taken." });
+    }
+
+    // If all checks pass, create and save the new user.
     const user = new User(req.body);
     await user.save();
     res.status(201).send({ message: "User added successfully." });
@@ -57,7 +96,12 @@ app.post("/signup", signupValidationRules, async (req, res) => {
   }
 });
 
-// get user by email
+/**
+ * @route   GET /user
+ * @desc    Gets a single user by their email via query string.
+ * @example /user?email=test@example.com
+ */
+
 app.get("/user", async (req, res) => {
   const userEmail = req.query.email;
   try {
@@ -71,17 +115,23 @@ app.get("/user", async (req, res) => {
   }
 });
 
-// get all user data
+/**
+ * @route   GET /feed
+ * @desc    Gets all users in the database.
+ */
 app.get("/feed", async (req, res) => {
   try {
-    const feed = await User.find({});
-    res.send(feed);
+    const users = await User.find({});
+    res.send(users);
   } catch (error) {
     res.status(500).send({ error: "Something went wrong." });
   }
 });
 
-//delete api
+/**
+ * @route   DELETE /user/:id
+ * @desc    Deletes a user by their ID.
+ */
 app.delete("/user/:id", async (req, res) => {
   const userId = req.params.id;
   try {
@@ -97,20 +147,26 @@ app.delete("/user/:id", async (req, res) => {
   }
 });
 
-//user data update api based on id
+/**
+ * @route   PATCH /user/:userId
+ * @desc    Updates a user's profile information.
+ */
+
 app.patch("/user/:userId", updateUserValidationRules, async (req, res) => {
+  // Check for validation errors from updateUserValidationRules.
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ error: errors.array() });
   }
 
   const userId = req.params.userId;
-  const data = req.body;
+  const updates = req.body;
 
   try {
+    // Security: Whitelist of fields that are allowed to be updated.
     const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "skills", "age"];
 
-    const isUpdateAllowed = Object.keys(data).every((k) =>
+    const isUpdateAllowed = Object.keys(updates).every((k) =>
       ALLOWED_UPDATE.includes(k)
     );
 
@@ -119,12 +175,17 @@ app.patch("/user/:userId", updateUserValidationRules, async (req, res) => {
         .status(400)
         .send({ error: "Update contains forbidden fields." });
     }
-    if (data.skills && data.skills.length > 10) {
+    // Custom business logic validation.
+    if (updates.skills && updates.skills.length > 10) {
       return res
         .status(400)
         .send({ error: "You can have a maximum of 10 skills." });
     }
-    const updatedUser = await User.findByIdAndUpdate(userId, data, {
+
+    // Find the user and apply updates.
+    // { new: true } returns the modified document.
+    // { runValidators: true } ensures Mongoose schema validation is run.
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
       new: true,
       runValidators: true,
     });
@@ -135,10 +196,16 @@ app.patch("/user/:userId", updateUserValidationRules, async (req, res) => {
 
     res.send(updatedUser);
   } catch (error) {
-    res.status(500).send(error.message);
+    if (error.name === "ValidationError") {
+      return res.status(400).send({ error: error.message });
+    }
+
+    res.status(500).send({ error: "An unexpected error occurred." });
   }
 });
 
+// --- Server Initialization ---
+// Connect to the database and start the Express server.
 connectDB()
   .then(() => {
     console.log("database connection successful");
