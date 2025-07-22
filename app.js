@@ -106,14 +106,12 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     // Combine the user existence check and password comparison into a single condition.
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !user.varifyPassword(password)) {
       return res.status(400).send({ error: "Invalid credentials." });
     }
 
     // creating the jwt token
-    const token = await jwt.sign({ _id: user._id }, "SHUBHI@TINDER$1DEC", {
-      expiresIn: "1d",
-    });
+    const token = await user.getJwt()
     console.log(token);
 
     // add token and cookies and send the responce to user

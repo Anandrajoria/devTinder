@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require("bcrypt"); 
+const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -80,7 +80,7 @@ const userSchema = new mongoose.Schema(
     },
     photoUrl: {
       type: String,
-      trim: true, 
+      trim: true,
       validate(value) {
         if (value && !validator.isURL(value)) {
           throw new Error("Invalid URL provided for photoUrl.");
@@ -112,5 +112,25 @@ userSchema.pre("save", async function (next) {
 
   next();
 });
+
+userSchema.method.getJwt = async function () {
+  const user = this;
+  const token = await JsonWebTokenError.sign(
+    { _id: user._id },
+    "SHUBHI@TINDER$1DEC",
+    {
+      expireIn: "7d",
+    }
+  );
+  return token;
+};
+
+userSchema.method.varifyPassword = async function (passwordInputByUser) {
+  const user = this;
+
+  const passwordHash = user.password;
+  const varifyBcrypt = await bcrypt.compare(passwordInputByUser, passwordHash);
+  return varifyBcrypt;
+};
 
 module.exports = mongoose.model("user", userSchema);
