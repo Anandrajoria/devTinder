@@ -1,4 +1,5 @@
 // --- Imports ---
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const connectDB = require("./src/config/database");
@@ -6,10 +7,14 @@ const User = require("./src/models/user");
 const { body, validationResult } = require("express-validator");
 const { validateSignUpData } = require("./src/utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./src/middleware/auth");
 
 // --- Core Middleware ---
 // Enables the express app to parse JSON formatted request bodies
 app.use(express.json());
+app.use(cookieParser());
 
 // --- Validation Rule Sets ---
 
@@ -67,30 +72,36 @@ const signupValidationRules = [
  */
 
 // add new user data
-app.post("/signup", signupValidationRules, validateSignUpData ,async (req, res) => {
-  // Check for validation errors defined in signupValidationRules
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
-  }
+app.post(
+  "/signup",
+  signupValidationRules,
+  validateSignUpData,
+  async (req, res) => {
+    // Check for validation errors defined in signupValidationRules
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
 
-  try {
-    
-    // Run all your validation checks first.
-    const user = new User(req.body);
-    await user.save();
-    res.status(201).send({ message: "User added successfully." });
-  } catch (err) {
-    res.status(400).send({ error: "Error saving user: " + err.message });
+    try {
+      // Run all your validation checks first.
+      const user = new User(req.body);
+      await user.save();
+      res.status(201).send({ message: "User added successfully." });
+    } catch (err) {
+      res.status(400).send({ error: "Error saving user: " + err.message });
+    }
   }
-});
+);
 
 //login user
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(400).send({ error: "Email and password are required." });
+      return res
+        .status(400)
+        .send({ error: "Email and password are required." });
     // Find the user by their email address.
     const user = await User.findOne({ email });
 
@@ -99,120 +110,31 @@ app.post("/login", async (req, res) => {
       return res.status(400).send({ error: "Invalid credentials." });
     }
 
-    // On success, you would typically generate a JWT token.
+    // creating the jwt token
+    const token = await jwt.sign({ _id: user._id }, "SHUBHI@TINDER$1DEC", {
+      expiresIn: "1d",
+    });
+    console.log(token);
+
+    // add token and cookies and send the responce to user
+    res.cookie("token", token);
+
     res.send({ message: "User login successful" });
   } catch (error) {
     res.status(400).send("ERROR:" + error.message);
   }
 });
 
-/**
- * @route   GET /user
- * @desc    Gets a single user by their email via query string.
- * @example /user?email=test@example.com
- */
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.query.email;
+// profile of user
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: userEmail });
-    if (!user) {
-      return res.status(404).send({ error: "User not found." });
-    }
+    const user = req.user;
     res.send(user);
   } catch (error) {
-    res.status(500).send({ error: "something went wrong." });
+    res.status(401).send({ message: "Invalid or expired token." });
   }
 });
 
-/**
- * @route   GET /feed
- * @desc    Gets all users in the database.
- */
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.send(users);
-  } catch (error) {
-    res.status(500).send({ error: "Something went wrong." });
-  }
-});
-
-/**
- * @route   DELETE /user/:id
- * @desc    Deletes a user by their ID.
- */
-app.delete("/user/:id", async (req, res) => {
-  const userId = req.params.id;
-  try {
-    // await User.findByIdAndDelete({ _id: userId });
-    const deletedUser = await User.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      return res.status(404).send({ error: "User not found." });
-    }
-
-    res.send({ message: "User deleted successfully." });
-  } catch (err) {
-    res.status(400).send({ error: err.message });
-  }
-});
-
-/**
- * @route   PATCH /user/:userId
- * @desc    Updates a user's profile information.
- */
-
-app.patch("/user/:userId", updateUserValidationRules, async (req, res) => {
-  // Check for validation errors from updateUserValidationRules.
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ error: errors.array() });
-  }
-
-  const userId = req.params.userId;
-  const updates = req.body;
-
-  try {
-    // Security: Whitelist of fields that are allowed to be updated.
-    const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "skills", "age"];
-
-    const isUpdateAllowed = Object.keys(updates).every((k) =>
-      ALLOWED_UPDATE.includes(k)
-    );
-
-    if (!isUpdateAllowed) {
-      return res
-        .status(400)
-        .send({ error: "Update contains forbidden fields." });
-    }
-    // Custom business logic validation.
-    if (updates.skills && updates.skills.length > 10) {
-      return res
-        .status(400)
-        .send({ error: "You can have a maximum of 10 skills." });
-    }
-
-    // Find the user and apply updates.
-    // { new: true } returns the modified document.
-    // { runValidators: true } ensures Mongoose schema validation is run.
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedUser) {
-      return res.status(404).send({ error: "User not found." });
-    }
-
-    res.send(updatedUser);
-  } catch (error) {
-    if (error.name === "ValidationError") {
-      return res.status(400).send({ error: error.message });
-    }
-
-    res.status(500).send({ error: "An unexpected error occurred." });
-  }
-});
 
 // --- Server Initialization ---
 // Connect to the database and start the Express server.
