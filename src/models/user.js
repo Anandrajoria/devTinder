@@ -106,7 +106,6 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function (next) {
   const user = this;
-
   if (user.isModified("password")) {
     user.password = await bcrypt.hash(user.password, 10);
   }
@@ -122,11 +121,11 @@ userSchema.methods.getJwt = async function () {
   return token;
 };
 
-userSchema.methods.verifyPassword = async function (passwordInputByUser) {
-  const user = this;
+userSchema.methods.verifyPassword = async function (password) {
+  // const user = this;
 
-  const passwordHash = user.password;
-  const varifyBcrypt = await bcrypt.compare(passwordInputByUser, passwordHash);
+  // const passwordHash = this.password;
+  const varifyBcrypt = await bcrypt.compare(password, this.password);
   return varifyBcrypt;
 };
 

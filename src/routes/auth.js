@@ -1,10 +1,11 @@
 const express = require("express");
 const app = express();
 
-const { body, validationResult } = require('express-validator');
+const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
 
 const { validateSignUpData } = require("../utils/validation");
+const { userAuth } = require("../middleware/auth");
 
 const authRouter = express.Router();
 
@@ -75,7 +76,6 @@ authRouter.post(
   }
 );
 
-
 //login api
 authRouter.post("/login", async (req, res) => {
   try {
@@ -88,22 +88,33 @@ authRouter.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     // Combine the user existence check and password comparison into a single condition.
-    if (!user || !user.verifyPassword(password)) {
+    if (!user || !(await user.verifyPassword(password))) {
       return res.status(400).send({ error: "Invalid credentials." });
     }
 
     // creating the jwt token
-    const token = await user.getJwt()
-    console.log(token);
+    const token = await user.getJwt();
 
     // add token and cookies and send the responce to user
-    res.cookie("token", token);
+    res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+    // res.cookie("token", token);
 
-    res.send({ message: "User login successful" });
+    user.password = undefined;
+
+    res.send({ message: "User login successful", user: user });
   } catch (error) {
     res.status(400).send("ERROR:" + error.message);
   }
 });
 
+//logout
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    sameSite: "lax",
+    expires: new Date(0),
+  });
+  res.send("user logged out successfully");
+});
 
 module.exports = authRouter;

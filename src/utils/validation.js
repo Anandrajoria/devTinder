@@ -1,5 +1,5 @@
 const validator = require("validator");
-const User = require("../models/user"); // Adjust path to your model
+const User = require("../models/user"); 
 
 const validateSignUpData = async (req, res, next) => {
   try {
@@ -29,5 +29,20 @@ const validateSignUpData = async (req, res, next) => {
     res.status(400).send({ error: err.message });
   }
 };
+function validateEditProfileData(req) {
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "email",
+    "photoUrl",
+    "gender",
+    "age",
+    "about",
+    "skills",
+  ];
 
-module.exports = { validateSignUpData };
+  const isAllowed=Object.keys(req.body).every(field=>allowedEditFields.includes(field));
+
+  return isAllowed
+};
+module.exports = { validateSignUpData, validateEditProfileData };
