@@ -35,9 +35,10 @@ userRouter.get("/user/connection", userAuth, async (req, res) => {
     const connectionRequest = await ConnectionRequest.find({
       $or: [
         { senderId: loggedInUserId, status: "accepted" },
-        { reveiverId: loggedInUserId, status: "accepted" },
+        { receiverId: loggedInUserId, status: "accepted" },
       ],
-    }).populate("senderId", USER_SAFE_DATA);
+    }).populate("senderId", USER_SAFE_DATA).
+    populate('receiverId',USER_SAFE_DATA)
     res.json({ data: connectionRequest });
   } catch (error) {
     console.error("ERROR FETCHING ALL REQUESTS:", error);

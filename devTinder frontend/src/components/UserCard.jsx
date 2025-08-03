@@ -1,5 +1,8 @@
 
 const UserCard = ({user}) => {
+  if (!user) {
+    return null;
+  }
     const {firstName,lastName,photoUrl,age,gender,about,skills}=user
   return (
     <div className="card bg-base-300 w-96 shadow-sm">
@@ -13,6 +16,7 @@ const UserCard = ({user}) => {
     {age&& gender&& <p>{age+ " " + gender}</p>}
     
     <p>{about}</p>
+    <p>{skills}</p>
     <div className="card-actions justify-center my-4">
       <button className="btn btn-primary">Ignore</button>
       <button className="btn btn-secondary">interested</button>

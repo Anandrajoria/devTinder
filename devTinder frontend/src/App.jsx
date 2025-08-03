@@ -1,6 +1,4 @@
 import LandingPage from "./LandingPage";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import "./index.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Body from "./components/body";
@@ -9,6 +7,8 @@ import Profile from "./components/Profile";
 import { Provider } from "react-redux";
 import appStore from "./utils/AppStore";
 import Feed from "./components/Feed";
+import Connections from "./components/Connections";
+import Requests from "./components/Requests";
 
 function App() {
   return (
@@ -20,6 +20,8 @@ function App() {
               <Route index element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/connections" element={<Connections />} />
+              <Route path="/requests" element={<Requests />} />
               <Route path="/feed" element={<Feed />} />
             </Route>
           </Routes>
