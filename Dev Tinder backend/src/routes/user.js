@@ -4,7 +4,7 @@ const ConnectionRequest = require("../models/connectionRequest");
 const userRouter = express.Router();
 const User = require("../models/user");
 
-const USER_SAFE_DATA = "firstName lastName photoUrl age gender about";
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
@@ -14,12 +14,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       status: "interested",
     }).populate("senderId", USER_SAFE_DATA);
 
-    const data = connectionRequest.map((row) => {
-      if (row.senderId._id.toString() === loggedInUserId.toString()) {
-        return row.senderId;
-      }
-      row.senderId;
-    });
+   const data = connectionRequest; 
 
     res.json({ message: "data fetched successfully", data });
   } catch (error) {
