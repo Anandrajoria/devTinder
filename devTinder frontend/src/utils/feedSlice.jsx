@@ -1,17 +1,29 @@
+
 import { createSlice } from "@reduxjs/toolkit";
 
 const feedSlice = createSlice({
   name: "feed",
-  initialState: null,
+  initialState: [], // Use an empty array as the initial state
   reducers: {
-    addFeed: (state, action) => action.payload,
-    removeFeed: (state, action) => {
-       if (!Array.isArray(state)) return state;
-      const newFeed = state.filter((user) => user._id !== action.payload);
-      return newFeed;
+    // Replaces the feed. Used for the initial fetch.
+    setFeed: (state, action) => {
+      return action.payload;
+    },
+    // Adds new users to the end of the existing feed. Used for "Load More".
+    appendFeed: (state, action) => {
+      // Prevent duplicates in case of network re-tries
+      const existingIds = new Set(state.map(user => user._id));
+      const newUsers = action.payload.filter(user => !existingIds.has(user._id));
+      state.push(...newUsers);
+    },
+    // Removes a single user after an action (ignore/interested)
+    removeUserFromFeed: (state, action) => {
+      return state.filter((user) => user._id !== action.payload);
     },
   },
 });
 
-export const { addFeed, removeFeed } = feedSlice.actions;
+export const { setFeed, appendFeed, removeUserFromFeed } = feedSlice.actions;
 export default feedSlice.reducer;
+
+

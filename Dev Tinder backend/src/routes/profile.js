@@ -15,20 +15,67 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   }
 });
 
+// profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+//   try {
+//     if (!validateEditProfileData(req)) {
+//       return res
+//         .status(400)
+//         .send({ message: "Request contains invalid fields." });
+//     }
+//     const loggedInUser = req.user;
+
+//     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
+//     await loggedInUser.save();
+//     res.json({ message: "edit successfully", data: loggedInUser });
+//   } catch (err) {
+//     res.status(400).send("err:" + err.message);
+//   }
+// });
+
+// In your backend router file (e.g., routes/profileRouter.js)
+
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
-    if (!validateEditProfileData(req)) {
-      return res
-        .status(400)
-        .send({ message: "Request contains invalid fields." });
-    }
-    const loggedInUser = req.user;
+    // ✅ Destructure only the fields that are allowed to be changed
+    const {
+      firstName,
+      lastName,
+      age,
+      gender,
+      about,
+      photoUrl,
+      skills,
+    } = req.body;
 
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
-    await loggedInUser.save();
-    res.json({ message: "edit successfully", data: loggedInUser });
+    // Get the Mongoose document for the logged-in user from the auth middleware
+    const userToUpdate = req.user;
+
+    // Securely update only the allowed fields if they were provided in the request
+    if (firstName) userToUpdate.firstName = firstName;
+    if (lastName) userToUpdate.lastName = lastName;
+    if (age) userToUpdate.age = age;
+    if (gender) userToUpdate.gender = gender;
+    if (about) userToUpdate.about = about;
+    if (photoUrl) userToUpdate.photoUrl = photoUrl;
+
+    // Process the skills string into an array before saving
+    if (skills && typeof skills === 'string') {
+      userToUpdate.skills = skills.split(',').map(skill => skill.trim());
+    } else if (Array.isArray(skills)) {
+      userToUpdate.skills = skills;
+    }
+
+    // Save the updated user document
+    const updatedUser = await userToUpdate.save();
+    
+    // Remove the password before sending the response back
+    updatedUser.password = undefined;
+
+    res.status(200).json({ message: "Profile updated successfully", data: updatedUser });
+
   } catch (err) {
-    res.status(400).send("err:" + err.message);
+    console.error("ERROR UPDATING PROFILE:", err);
+    res.status(500).json({ message: "Server error while updating profile." });
   }
 });
 

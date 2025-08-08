@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
-
+const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
-
+const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("../utils/validation");
 const { userAuth } = require("../middleware/auth");
 
@@ -56,10 +56,9 @@ const signupValidationRules = [
 //signup api
 authRouter.post(
   "/signup",
-  signupValidationRules,
+  // signupValidationRules,
   validateSignUpData,
   async (req, res) => {
-    // Check for validation errors defined in signupValidationRules
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -68,8 +67,18 @@ authRouter.post(
     try {
       // Run all your validation checks first.
       const user = new User(req.body);
-      await user.save();
-      res.status(201).send({ message: "User added successfully." });
+      const savedUser = await user.save();
+
+      const token = await savedUser.getJwt();
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+
+      res
+        .status(201)
+        .json({ message: "User added successfully.", data: savedUser });
     } catch (err) {
       res.status(400).send({ error: "Error saving user: " + err.message });
     }

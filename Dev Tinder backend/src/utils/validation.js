@@ -1,5 +1,5 @@
 const validator = require("validator");
-const User = require("../models/user"); 
+const User = require("../models/user");
 
 const validateSignUpData = async (req, res, next) => {
   try {
@@ -17,18 +17,21 @@ const validateSignUpData = async (req, res, next) => {
     if (existingEmail) {
       throw new Error("Email is already registered.");
     }
+    if (!userName) throw new Error("Username is required.");
 
     const existingUserName = await User.findOne({
-      userName: userName.toLowerCase(),
+      userName: userName?.toLowerCase(),
     });
     if (existingUserName) {
       throw new Error("Username is already taken.");
     }
     next();
+    
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
 };
+
 function validateEditProfileData(req) {
   const allowedEditFields = [
     "firstName",
@@ -41,8 +44,10 @@ function validateEditProfileData(req) {
     "skills",
   ];
 
-  const isAllowed=Object.keys(req.body).every(field=>allowedEditFields.includes(field));
+  const isAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field)
+  );
 
-  return isAllowed
-};
+  return isAllowed;
+}
 module.exports = { validateSignUpData, validateEditProfileData };

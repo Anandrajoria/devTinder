@@ -6,6 +6,7 @@ import { BASE_URL } from "../utils/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/UserSlice";
 import { useEffect } from "react";
+import ErrorBoundary from "./ErrorBoundary";
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -15,27 +16,29 @@ const Body = () => {
   const fetchUser = async () => {
     if (userData) return;
     try {
-      const res = await axios.get(BASE_URL+"/profile/view", {
+      const res = await axios.get(BASE_URL + "/profile/view", {
         withCredentials: true,
       });
 
       dispatch(addUser(res.data));
     } catch (error) {
-      if (error.status === 401) {
+      if (error.response === 401) {
         navigate("/login");
       }
-      console.error(error);
+      console.error(error.message);
     }
   };
   useEffect(() => {
     fetchUser();
-  }, []);
+  },[]);
 
   return (
     <>
-      <Navbar />
-      <Outlet />
-      {/* <Footer /> */}
+      <ErrorBoundary>
+        <Navbar />
+        <Outlet />
+        <Footer/>
+      </ErrorBoundary>
     </>
   );
 };
