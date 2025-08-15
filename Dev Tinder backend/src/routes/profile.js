@@ -32,49 +32,42 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 //   }
 // });
 
-// In your backend router file (e.g., routes/profileRouter.js)
-
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
-    // ✅ Destructure only the fields that are allowed to be changed
-    const {
-      firstName,
-      lastName,
-      age,
-      gender,
-      about,
-      photoUrl,
-      skills,
-    } = req.body;
-
+    // We can handle validation directly here or use a library like express-validator
+    const { firstName, lastName, about, skills, headline, photoUrl } = req.body;
+    
     // Get the Mongoose document for the logged-in user from the auth middleware
     const userToUpdate = req.user;
 
-    // Securely update only the allowed fields if they were provided in the request
+    // ✅ SECURE: Explicitly update only the fields you want to allow.
+    // This prevents the mass assignment vulnerability.
     if (firstName) userToUpdate.firstName = firstName;
     if (lastName) userToUpdate.lastName = lastName;
-    if (age) userToUpdate.age = age;
-    if (gender) userToUpdate.gender = gender;
     if (about) userToUpdate.about = about;
+    if (headline) userToUpdate.headline = headline;
     if (photoUrl) userToUpdate.photoUrl = photoUrl;
 
-    // Process the skills string into an array before saving
+    // ✅ FIX: Process the skills string into an array before saving.
     if (skills && typeof skills === 'string') {
+      // Convert the comma-separated string into an array of trimmed strings
       userToUpdate.skills = skills.split(',').map(skill => skill.trim());
     } else if (Array.isArray(skills)) {
+      // If they send an array, accept it
       userToUpdate.skills = skills;
     }
 
-    // Save the updated user document
+    // Save the updated user document. This will trigger any Mongoose middleware (hooks).
     const updatedUser = await userToUpdate.save();
     
-    // Remove the password before sending the response back
+    // It's good practice to not send the password back, even if it's hashed.
     updatedUser.password = undefined;
 
     res.status(200).json({ message: "Profile updated successfully", data: updatedUser });
 
   } catch (err) {
     console.error("ERROR UPDATING PROFILE:", err);
+    // ✅ IMPROVEMENT: Send a consistent JSON error response and use a 500 status code.
     res.status(500).json({ message: "Server error while updating profile." });
   }
 });

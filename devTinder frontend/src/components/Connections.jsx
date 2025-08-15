@@ -97,6 +97,30 @@ const Connections = () => {
   const [loading, setLoading] = useState(true);
   const [showSkeletons, setShowSkeletons] = useState(false);
 
+  // const handleRemoveFromList = (removedUserId) => {
+  //   const updatedConnections = connections.filter((connection) => {
+  //     const otherUser =
+  //       connection.fromUserId._id === removedUserId
+  //         ? connection.fromUserId
+  //         : connection.toUserId;
+  //     return otherUser._id !== removedUserId;
+  //   });
+  //   dispatch(addConnection(updatedConnections));
+  // };
+
+  const handleRemoveFromList = (removedUserId) => {
+  const updatedConnections = connections.filter((connection) => {
+    const otherUserId =
+      connection.senderId._id === currentUser._id
+        ? connection.receiverId._id
+        : connection.senderId._id;
+    return otherUserId !== removedUserId;
+  });
+
+  dispatch(addConnection(updatedConnections));
+};
+
+
   useEffect(() => {
     const skeletonTimer = setTimeout(() => {
       setShowSkeletons(true);
@@ -168,7 +192,7 @@ const Connections = () => {
             : connections.map((connection) => {
                 const userProfile = getOtherUser(connection);
                 return (
-                  <ConnectionCard key={connection._id} user={userProfile} />
+                  <ConnectionCard key={connection._id} user={userProfile}  onRemove={handleRemoveFromList}/>
                 );
               })}
         </div>
@@ -178,3 +202,5 @@ const Connections = () => {
 };
 
 export default Connections;
+
+

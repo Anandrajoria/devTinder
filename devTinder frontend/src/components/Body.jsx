@@ -22,23 +22,37 @@ const Body = () => {
 
       dispatch(addUser(res.data));
     } catch (error) {
-      if (error.response === 401) {
-        navigate("/login");
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 401) {
+          navigate("/login");
+        } else if (status === 403) {
+          navigate("/forbidden");
+        } else if (status === 404) {
+          navigate("/not-found");
+        } else {
+          navigate("/server-error");
+        }
+      } else {
+        // No response from server (network error, CORS, etc.)
+        navigate("/server-error");
       }
+
       console.error(error.message);
     }
   };
   useEffect(() => {
     fetchUser();
-  },[]);
+  }, []);
 
   return (
     <>
-      <ErrorBoundary>
+      {/* <ErrorBoundary> */}
         <Navbar />
         <Outlet />
-        <Footer/>
-      </ErrorBoundary>
+        <Footer />
+      {/* </ErrorBoundary> */}
     </>
   );
 };

@@ -3,8 +3,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 // NEW: Importing specific, high-quality icons
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
-
+import { FaGithub, FaLinkedin} from 'react-icons/fa';
+import { FaXTwitter } from "react-icons/fa6";
 const Footer = () => {
   return (
     // The main footer container. It uses theme-aware colors and a top border.
@@ -38,17 +38,17 @@ const Footer = () => {
 
             <nav className="flex flex-col gap-2">
               <h6 className="footer-title">Legal</h6>
-              <a href="#" className="link link-hover">Terms of use</a>
-              <a href="#" className="link link-hover">Privacy policy</a>
-              <a href="#" className="link link-hover">Cookie policy</a>
+              <Link  to="/wip/terms" className="link link-hover">Terms of use</Link>
+              <Link to="/wip/privacy" className="link link-hover">Privacy policy</Link>
+              <Link to="/wip/cookies-policy" className="link link-hover">Cookie policy</Link>
             </nav>
 
             <nav className="flex flex-col gap-2">
                 <h6 className="footer-title">Social</h6>
                 <div className="flex gap-4">
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="link link-hover text-2xl"><FaGithub /></a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="link link-hover text-2xl"><FaLinkedin /></a>
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="link link-hover text-2xl"><FaTwitter /></a>
+                    <Link to="/wip/github" rel="noopener noreferrer" className="link link-hover text-2xl"><FaGithub /></Link>
+                    <Link  to="/wip/linkedin"  rel="noopener noreferrer" className="link link-hover text-2xl"><FaLinkedin /></Link>
+                    <Link to="/wip/x"  rel="noopener noreferrer" className="link link-hover text-2xl"><FaXTwitter /></Link>
                 </div>
             </nav>
         </div>

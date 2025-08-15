@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaCode, FaSignInAlt } from "react-icons/fa";
-import { useInView } from "framer-motion";
+import { useInView,motion } from "framer-motion";
 import UserCard from "./components/UserCard";
 
 // Configuration for the typing animation

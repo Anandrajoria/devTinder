@@ -8,16 +8,20 @@ export default {
   theme: {
     extend: {
       keyframes: {
-        blink: {
-          '0%, 100%': { backgroundColor: 'transparent' },
-          '50%': { backgroundColor: 'currentColor' }, // Use currentColor to match text color
-        }
+        fadeIn: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(20px)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 },
+        },
       },
       animation: {
-        blink: 'blink 1s step-end infinite',
-      }
+        fadeIn: "fadeIn 0.5s ease-out forwards",
+        slideUp: "slideUp 0.4s ease-out forwards",
+      },
     },
-    
   },
   plugins: [daisyui, animate],
   daisyui: {
@@ -35,4 +39,3 @@ export default {
     ],
   },
 };
-

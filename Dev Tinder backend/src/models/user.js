@@ -98,6 +98,12 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
     },
+    projects: [{
+    title: String,
+    description: String,
+    link: String,
+    technologies: [String]
+  }],
   },
   {
     timestamps: true,

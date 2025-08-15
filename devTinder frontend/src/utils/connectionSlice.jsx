@@ -15,9 +15,40 @@ export default connectionSlice.reducer
 
 
 
+// import { createSlice } from "@reduxjs/toolkit";
+
+// const connectionSlice = createSlice({
+//   // ✅ 1. Name changed to 'connections' (plural) to match the selector.
+//   name: "connections",
+
+//   // ✅ 2. Initial state is now an empty array to prevent crashes.
+//   initialState: [],
+
+//   reducers: {
+//     // ✅ 3. Renamed for clarity: this action SETS the entire list.
+//     setConnections: (state, action) => {
+//       // The payload from your API call will become the new state.
+//       return action.payload;
+//     },
+//     // This reducer correctly removes a single connection from the array.
+//     removeConnection: (state, action) => {
+//       const connectionIdToRemove = action.payload;
+//       return state.filter(
+//         (connection) => connection._id !== connectionIdToRemove
+//       );
+//     },
+//   },
+// });
+
+// // Export the updated actions.
+// export const { setConnections, removeConnection } = connectionSlice.actions;
+
+// export default connectionSlice.reducer;
 
 
-// src/utils/connectionSlice.js
+
+
+
 
 // import { createSlice } from "@reduxjs/toolkit";
 

@@ -1,0 +1,112 @@
+[
+  {
+    "firstName": "Arjun",
+    "lastName": "Rao",
+    "userName": "arjun_rao",
+    "email": "arjun.rao@example.com",
+    "password": "DataKing@25",
+    "age": 28,
+    "gender": "male",
+    "about": "Data Analyst at a leading tech firm in Bangalore. Proficient in SQL and Tableau.",
+    "skills": ["SQL", "Tableau", "Python", "Excel", "Power BI"]
+  },
+  {
+    "firstName": "Isha",
+    "lastName": "Singh",
+    "userName": "isha_singh",
+    "email": "isha.singh@example.com",
+    "password": "FrontEnd!24",
+    "age": 24,
+    "gender": "female",
+    "about": "Frontend Developer from Pune, passionate about creating beautiful and responsive user interfaces with React.",
+    "skills": ["HTML", "CSS", "JavaScript", "React", "Next.js"]
+  },
+  {
+    "firstName": "Vikram",
+    "lastName": "Gupta",
+    "userName": "vikram_g",
+    "email": "vikram.g@example.com",
+    "password": "DevOps#Sec23",
+    "age": 31,
+    "gender": "male",
+    "about": "DevOps Engineer based in Hyderabad with expertise in CI/CD pipelines and cloud infrastructure.",
+    "skills": ["AWS", "Jenkins", "Docker", "Kubernetes", "Ansible"]
+  },
+  {
+    "firstName": "Meera",
+    "lastName": "Joshi",
+    "userName": "meera_joshi",
+    "email": "meera.j@example.com",
+    "password": "DesignDiva$26",
+    "age": 26,
+    "gender": "female",
+    "about": "UI/UX Designer from Mumbai. I focus on user-centric design principles to create intuitive products.",
+    "skills": ["Figma", "Sketch", "Adobe XD", "User Research", "Wireframing"]
+  },
+  {
+    "firstName": "Ravi",
+    "lastName": "Kumar",
+    "userName": "ravi_kumar",
+    "email": "ravi.kumar@example.com",
+    "password": "JavaSpring@29",
+    "age": 29,
+    "gender": "male",
+    "about": "Backend Developer specializing in Java and the Spring Framework. Working in Chennai.",
+    "skills": ["Java", "Spring Boot", "Microservices", "PostgreSQL", "REST APIs"]
+  },
+  {
+    "firstName": "Aditi",
+    "lastName": "Sharma",
+    "userName": "aditi_sharma",
+    "email": "aditi.s@example.com",
+    "password": "Product#Lead22",
+    "age": 30,
+    "gender": "female",
+    "about": "Product Manager from Delhi with a background in engineering. I love solving complex user problems.",
+    "skills": ["Product Management", "Agile", "JIRA", "Roadmapping", "Market Research"]
+  },
+  {
+    "firstName": "Siddharth",
+    "lastName": "Menon",
+    "userName": "sid_menon",
+    "email": "sid.menon@example.com",
+    "password": "AndroidDev@27",
+    "age": 27,
+    "gender": "male",
+    "about": "Android Developer from Jaipur, building native mobile applications with Kotlin.",
+    "skills": ["Kotlin", "Android SDK", "Jetpack Compose", "Firebase", "MVVM"]
+  },
+  {
+    "firstName": "Kavya",
+    "lastName": "Nair",
+    "userName": "kavya_nair",
+    "email": "kavya.n@example.com",
+    "password": "TestAuto!25",
+    "age": 25,
+    "gender": "female",
+    "about": "QA Engineer from Noida focused on test automation using Selenium and Cypress.",
+    "skills": ["Selenium", "Cypress", "Java", "API Testing", "JMeter"]
+  },
+  {
+    "firstName": "Rohan",
+    "lastName": "Patel",
+    "userName": "rohan_patel",
+    "email": "rohan.p@example.com",
+    "password": "MLStudent#21",
+    "age": 21,
+    "gender": "male",
+    "about": "Computer Science student at VIT, Vellore. Aspiring Machine Learning Engineer.",
+    "skills": ["Python", "TensorFlow", "PyTorch", "Scikit-learn", "Pandas"]
+  },
+  {
+    "firstName": "Sunita",
+    "lastName": "Reddy",
+    "userName": "sunita_reddy",
+    "email": "sunita.r@example.com",
+    "password": "CloudArch@32",
+    "age": 32,
+    "gender": "female",
+    "about": "Certified Google Cloud Professional Cloud Architect working in Gurgaon.",
+    "skills": ["GCP", "Terraform", "CloudFormation", "Azure", "CI/CD"]
+  }
+]

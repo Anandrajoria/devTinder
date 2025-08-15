@@ -66,4 +66,40 @@ module.exports = { userAuth };
 //   }
 // };
 
-module.exports = { userAuth };
+
+
+// in src/middleware/auth.js (you can add this to your existing auth file)
+
+
+const userAuthOptional = async (req, res, next) => {
+  try {
+    // Get token from cookie or Authorization header
+    const token =
+      req.cookies?.token ||
+      req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      // No token — treat as guest
+      return next();
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Find user in DB
+    const user = await User.findById(decoded._id);
+    if (user) {
+      req.user = user;
+    }
+  } catch (err) {
+    // Invalid token — ignore and continue as guest
+  }
+  next();
+};
+
+module.exports = { userAuth, userAuthOptional };
+
+
+// module.exports = { userAuth, userAuthOptional }; // Export both
+
+// module.exports = { userAuth };
