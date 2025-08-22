@@ -199,9 +199,9 @@ const UserProfile = () => {
             <h1 className="text-5xl font-extrabold">{`${profile.firstName} ${profile.lastName}`}</h1>
             <p className="text-xl text-base-content/70 mt-2">{profile.headline || "Developer | Open to new opportunities"}</p>
             <div className="flex justify-center sm:justify-start space-x-4 mt-4 text-2xl">
-              <Link to="/work-in-progress" className="text-base-content/70 hover:text-primary transition-colors"><FaGithub /></Link>
-              <Link to="/work-in-progress" className="text-base-content/70 hover:text-primary transition-colors"><FaLinkedin /></Link>
-              <Link to="/work-in-progress" className="text-base-content/70 hover:text-primary transition-colors"><FaGlobe /></Link>
+              <Link to="/wip/github" className="text-base-content/70 hover:text-primary transition-colors"><FaGithub /></Link>
+              <Link to="/wip/linkedin" className="text-base-content/70 hover:text-primary transition-colors"><FaLinkedin /></Link>
+              <Link to="/wip/globe" className="text-base-content/70 hover:text-primary transition-colors"><FaGlobe /></Link>
             </div>
           </div>
         </motion.div>

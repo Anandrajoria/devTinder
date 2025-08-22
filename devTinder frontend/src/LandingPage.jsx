@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { FaCode, FaSignInAlt } from "react-icons/fa";
 import { useInView,motion } from "framer-motion";
 import UserCard from "./components/UserCard";
+import Navbar from "./components/Navbar";   // 👈 Import Navbar
+import Footer from "./components/Footer"; 
 
 // Configuration for the typing animation
 const textLines = [
@@ -133,11 +135,14 @@ export default function LandingPage() {
   }, [text, isErasing, charIndex, lineIndex]);
 
   return (
+    <>
     <div className="relative min-h-screen w-full overflow-hidden bg-base-100 text-base-content">
+    <Navbar />  
       <GridBackground />
       <CursorAura />
 
-      <div className="relative z-10 flex h-screen w-full flex-col items-center justify-center p-4">
+      <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center p-4">
+
         <div className="flex flex-col items-center text-center">
           <h1 className="text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl">
             dev<span className="text-primary">Tinder</span>
@@ -192,6 +197,9 @@ export default function LandingPage() {
       <div className="relative z-10">
         <DemoProfilesSection />
       </div>
+
     </div>
+      <Footer/>
+    </>
   );
 }

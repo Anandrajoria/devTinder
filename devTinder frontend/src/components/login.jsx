@@ -28,35 +28,34 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post(
-        BASE_URL + "/login",
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data.user));
-      return navigate("/feed");
-    } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
-    }
-  };
-  const handleSignUp = async () => {
-    try {
-      const res = await axios.post(
-        BASE_URL + "/signup",
-        { firstName, lastName, userName, email, password },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data.data));
-      return navigate("/profile");
-    } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
-    }
-  };
+const handleLogin = async () => {
+  try {
+    const res = await axios.post(
+      BASE_URL + "/login",
+      { email, password },
+      { withCredentials: true }
+    );
+    dispatch(addUser(res.data.user));
+    return navigate("/feed");
+  } catch (err) {
+    setError(err?.response?.data?.message || "Something went wrong");
+  }
+};
+
+const handleSignUp = async () => {
+  try {
+    const res = await axios.post(
+      BASE_URL + "/signup",
+      { firstName, lastName, userName, email, password },
+      { withCredentials: true }
+    );
+    dispatch(addUser(res.data.data));
+    return navigate("/profile");
+  } catch (err) {
+    setError(err?.response?.data?.message || "Something went wrong");
+  }
+};
+
 
   return (
     <div className="flex justify-center my-10">
