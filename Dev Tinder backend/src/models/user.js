@@ -136,3 +136,6 @@ userSchema.methods.verifyPassword = async function (password) {
 };
 
 module.exports = mongoose.model("user", userSchema);
+
+
+

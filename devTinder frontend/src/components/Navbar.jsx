@@ -204,6 +204,12 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/feed" className="justify-between">
+                    Feed <span className="badge badge-primary">New</span>
+                  </Link>
+                </li>
+                
+                <li>
                   <Link to="/connections">Connections</Link>
                 </li>
                 <li>

@@ -17,9 +17,10 @@ const ConnectionRequestSchema = new mongoose.Schema(
       required:true,
       enum: {
         values: ["ignored", "interested", "accepted", "rejected"],
+        default:'pending',
         message: "{VALUE} is not a valid status.",
       },
-      default: "pending",
+      
     },
     senderUserName:{type:String , required:true},
     receiverUserName:{type:String , required:true}
@@ -29,7 +30,7 @@ const ConnectionRequestSchema = new mongoose.Schema(
   }
 );
 ConnectionRequestSchema.index({senderId:1,receiverId:1})
-ConnectionRequestSchema.index({ receiverId: 1, createdAt: 1 }); // For fetching received requests
+ConnectionRequestSchema.index({ receiverId: 1, createdAt: 1 }); 
 ConnectionRequestSchema.index({ senderId: 1, createdAt: 1 });
 
 const ConnectionRequestModel = new mongoose.model(

@@ -43,60 +43,85 @@ userRouter.get("/user/connection", userAuth, async (req, res) => {
   }
 });
 
-// userRouter.get("/feed", userAuth, async (req, res) => {
+userRouter.post("/request/:userId", userAuth, async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const receiverId = req.params.userId;
 
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     let limit = parseInt(req.query.limit) || 10;
-//     limit = limit > 50 ? 50 : limit;
-//     const skip = (page - 1) * limit;
+    // Validate receiverId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
 
-//     let query = {};
+    // Check if trying to send request to self
+    if (loggedInUserId.toString() === receiverId.toString()) {
+      return res.status(400).json({ message: "Cannot send request to yourself" });
+    }
 
-//     // Check if a user is logged in
-//     if (req.user) {
-//       // --- LOGGED-IN USER LOGIC (Personalized Feed) ---
-//       const loggedInUserId = req.user._id;
+    // Check if receiver exists
+    const receiverUser = await User.findById(receiverId);
+    if (!receiverUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-//       // Find all user IDs that the logged-in user has already sent a request to
-//       const existingRequests = await ConnectionRequest.find({
-//         senderId: loggedInUserId,
-//       }).select("receiverId");
+    // Check if request already exists
+    let existingRequest = await ConnectionRequest.findOne({
+      $or: [
+        { senderId: loggedInUserId, receiverId },
+        { senderId: receiverId, receiverId: loggedInUserId }
+      ]
+    });
 
-//       const excludedUserIds = existingRequests.map(req => req.receiverId.toString());
-//       excludedUserIds.push(loggedInUserId.toString()); // Hide the logged-in user themselves
+    console.log("Existing request:", existingRequest); // 🐛 Debug log
 
-//       // Update the query to exclude these users
-//       query = { _id: { $nin: excludedUserIds } };
+    if (existingRequest) {
+      // Allow reviving rejected, ignored, or removed requests
+      if (existingRequest.status === "removed" || 
+          existingRequest.status === "rejected" || 
+          existingRequest.status === "ignored") {
+        
+        existingRequest.status = "interested";
+        existingRequest.senderId = loggedInUserId;
+        existingRequest.receiverId = receiverId;
+        existingRequest.senderUserName = req.user.userName;
+        existingRequest.receiverUserName = receiverUser.userName;
+        await existingRequest.save();
 
-//     } else {
-//       // --- GUEST USER LOGIC (Generic Feed) ---
-//       // No specific filters are needed, but you could add some,
-//       // e.g., filter out admin accounts if you have them.
-//       query = {};
-//     }
+        return res.status(200).json({
+          message: "Connection request re-sent.",
+          data: existingRequest
+        });
+      } else {
+        return res.status(400).json({ 
+          message: `Connection request already exists with status: ${existingRequest.status}` 
+        });
+      }
+    }
 
-//     // Execute the query for either logged-in users or guests
-//     const totalUsers = await User.countDocuments(query);
-//     const users = await User.find(query)
-//       .select(USER_SAFE_DATA)
-//       .skip(skip)
-//       .limit(limit);
+    // Create new request
+    const newRequest = new ConnectionRequest({
+      senderId: loggedInUserId,
+      receiverId,
+      senderUserName: req.user.userName,
+      receiverUserName: receiverUser.userName, // 🐛 FIXED: was receiverId.receiverUserName
+      status: "interested"
+    });
 
-//     res.status(200).json({
-//       message: "Feed fetched successfully.",
-//       page,
-//       totalPages: Math.ceil(totalUsers / limit),
-//       data: users,
-//     });
+    await newRequest.save();
 
-//   } catch (error) {
-//     console.error("ERROR in /user/feed:", error);
-//     res.status(500).json({ message: "An internal server error occurred." });
-//   }
-// });
+    res.status(201).json({
+      message: "Connection request sent successfully.",
+      data: newRequest
+    });
 
+  } catch (error) {
+    console.error("ERROR SENDING REQUEST:", error);
+    res.status(500).json({ message: "Server error while sending request." });
+  }
+});
 
+// 🐛 FIXED: Feed route - changed "pending" to "interested"
+// Updated feed route - put this in your userRouter
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -106,13 +131,13 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     limit = limit > 50 ? 50 : limit;
     const skip = (page - 1) * limit;
 
-      
+    // Only hide users with ACTIVE statuses (not removed/rejected)
     const connectionRequests = await ConnectionRequest.find({
       $or: [
         { receiverId: loggedInUser._id },
         { senderId: loggedInUser._id }
       ],
-    
+      status: { $in: ["interested", "accepted"] }  // ✅ Don't include "removed" here
     }).select("receiverId senderId");
 
     const hideUsersFromFeed = new Set();
@@ -136,51 +161,50 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+// 🆕 NEW: Unrequest route
+userRouter.delete("/request/unrequest/:userId", userAuth, async (req, res) => {
+  try {
+    const senderId = req.user._id;
+    const receiverId = req.params.userId;
 
-// POST /api/v1/connection/remove/:userId
-// userRouter.post("/remove/:userId", userAuth, async (req, res) => {
-//   try {
-//     // ✅ FIX 1: Changed req.User to the correct req.user (lowercase 'u').
-//     const loggedInUserId = req.user._id;
-//     const userToRemoveId = req.params.userId;
+    // Find and delete the request
+    const deletedRequest = await ConnectionRequest.findOneAndDelete({
+      senderId,
+      receiverId,
+      status: "interested"
+    });
 
-//     // ✅ FIX 2: Changed Connection to ConnectionRequest to match the imported model name.
-//     const result = await ConnectionRequest.deleteOne({
-//       status: "accepted",
-//       $or: [
-//         { senderId: loggedInUserId, receiverId: userToRemoveId },
-//         { senderId: userToRemoveId, receiverId: loggedInUserId },
-//       ],
-//     });
+    if (!deletedRequest) {
+      return res.status(404).json({ 
+        message: "No pending request found to cancel" 
+      });
+    }
 
-//     if (result.deletedCount === 0) {
-//       return res.status(404).json({ message: "Connection not found." });
-//     }
+    res.json({ 
+      message: "Request cancelled successfully",
+      data: deletedRequest
+    });
 
-//     res.status(200).json({ message: "Connection removed successfully." });
-//   } catch (error) {
-//     console.error("ERROR REMOVING CONNECTION:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Server error while removing connection." });
-//   }
-// });
+  } catch (error) {
+    console.error("ERROR UNREQUESTING:", error);
+    res.status(500).json({ message: "Server error while cancelling request." });
+  }
+});
 
 userRouter.post("/remove/:userId", userAuth, async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
     const userToRemoveId = req.params.userId;
 
-    // Instead of deleting, update status to "pending"
     const result = await ConnectionRequest.findOneAndUpdate(
       {
-        status: "accepted",
+        status: "accepted", // only remove if they are connected
         $or: [
           { senderId: loggedInUserId, receiverId: userToRemoveId },
           { senderId: userToRemoveId, receiverId: loggedInUserId },
         ],
       },
-      { status: "pending" }, // set back to pending
+      { status: "removed" }, // ✅ mark as removed
       { new: true }
     );
 
@@ -189,7 +213,7 @@ userRouter.post("/remove/:userId", userAuth, async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Connection removed and moved back to requests.",
+      message: "Connection removed successfully.",
       data: result,
     });
   } catch (error) {
@@ -199,7 +223,6 @@ userRouter.post("/remove/:userId", userAuth, async (req, res) => {
       .json({ message: "Server error while removing connection." });
   }
 });
-
 
 userRouter.get("/profile/:userId", userAuth, async (req, res) => {
   try {
