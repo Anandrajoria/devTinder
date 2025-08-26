@@ -3,24 +3,53 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 // console.log( process.env.JWT_SECRET);
 
+// const userAuth = async (req, res, next) => {
+//   try {
+//     const { token } = req.cookies;
+
+//     if (!token) {
+//       res
+//         .status(401)
+//         .send({ message: "Authentication failed. Invalid token." });
+//     }
+
+//     // const decodedObj = await jwt.verify(token, JWT_SECRET);
+//     const decodedObj = await jwt.verify(token, process.env.JWT_SECRET);
+
+//     const { _id } = decodedObj;
+
+//     const user = await User.findById(_id);
+//     if (!user) {
+//       res
+//         .status(401)
+//         .send({ message: "Authentication failed. User not found." });
+//     }
+//     req.user = user;
+//     next();
+//   } catch (error) {
+//     return res.status(401).send({ message: "Authentication failed. Invalid token." });
+//   }
+// };
+
+// module.exports = { userAuth };
+
 const userAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
 
     if (!token) {
-      res
+      return res
         .status(401)
         .send({ message: "Authentication failed. Invalid token." });
     }
 
-    // const decodedObj = await jwt.verify(token, JWT_SECRET);
     const decodedObj = await jwt.verify(token, process.env.JWT_SECRET);
 
     const { _id } = decodedObj;
 
     const user = await User.findById(_id);
     if (!user) {
-      res
+      return res
         .status(401)
         .send({ message: "Authentication failed. User not found." });
     }
