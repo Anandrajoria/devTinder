@@ -1,2 +1,1 @@
-export const BASE_URL =
-  location.hostname === "localhost" ? "/api" : "";
+export const BASE_URL ="/api";
