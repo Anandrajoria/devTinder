@@ -1,6 +1,7 @@
 require('dotenv').config();
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const JWT_SECRET="SHUBHI@TINDER$1DEC"
 // console.log( process.env.JWT_SECRET);
 
 // const userAuth = async (req, res, next) => {
@@ -43,7 +44,7 @@ const userAuth = async (req, res, next) => {
         .send({ message: "Authentication failed. Invalid token." });
     }
 
-    const decodedObj = await jwt.verify(token, process.env.JWT_SECRET);
+    const decodedObj = await jwt.verify(token, JWT_SECRET);
 
     const { _id } = decodedObj;
 
@@ -68,7 +69,7 @@ const userAuthOptional = async (req, res, next) => {
     // Get token from cookie or Authorization header
     const token =
       req.cookies?.token ||
-      req.header("Authorization")?.replace("Bearer ", process.env.JWT_SECRET);
+      req.header("Authorization")?.replace("Bearer ", JWT_SECRET);
 
     if (!token) {
       // No token — treat as guest
@@ -76,7 +77,7 @@ const userAuthOptional = async (req, res, next) => {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     // Find user in DB
     const user = await User.findById(decoded._id);
