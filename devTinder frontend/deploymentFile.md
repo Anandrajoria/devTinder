@@ -185,3 +185,10 @@ Means your backend is running but only as long as the terminal session is active
     ```sh
     http://<your-public-ip>/api
 Now your MERN app is fully deployed on AWS EC2 🚀
+
+
+
+
+
+
+
